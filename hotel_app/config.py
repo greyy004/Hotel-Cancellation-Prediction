@@ -7,10 +7,11 @@ DB_PATH = os.path.join(BASE_DIR, "hotel_booking.db")
 
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
-APP_SECRET_KEY = os.getenv("APP_SECRET_KEY") or os.urandom(32).hex()
+APP_SECRET_KEY = os.getenv("APP_SECRET_KEY")
 
 MODEL_DIR = os.path.join(BASE_DIR, "model_files")
-RF_MODEL_PATH = os.path.join(MODEL_DIR, "random_forest_model.pkl")
+RF_MODEL_PATH = os.path.join(MODEL_DIR, "random_forest_model.joblib")
+RF_MODEL_LEGACY_PATH = os.path.join(MODEL_DIR, "random_forest_model.pkl")
 ENCODERS_PATH = os.path.join(MODEL_DIR, "encoders.pkl")
 FEATURE_COLS_PATH = os.path.join(MODEL_DIR, "feature_cols.pkl")
 

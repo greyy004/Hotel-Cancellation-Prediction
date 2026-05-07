@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 from functools import wraps
 
 import pandas as pd
+import joblib
 import requests
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -179,7 +180,6 @@ def risk_label(probability):
 
 
 def prediction_label(probability):
-    # Human-readable label shown in UI.
     if probability > CANCEL_LIKELY_THRESHOLD:
         return "Likely to Cancel"
     return "Likely to NOT Cancel"
@@ -375,6 +375,19 @@ def load_pickle_artifact(path, label, fallback):
         return fallback
 
 
+def load_model_artifact(path, legacy_path=None):
+    if os.path.exists(path):
+        try:
+            return joblib.load(path)
+        except Exception as e:
+            print(f"Could not load RF model: {e}")
+
+    if legacy_path:
+        return load_pickle_artifact(legacy_path, "legacy RF model", None)
+
+    return None
+
+
 # Session + booking create flow
 def clear_pending_payment():
     # Clear temporary booking data saved before payment callback.
@@ -459,7 +472,10 @@ def build():
 
     # Init DB and load prediction model artifacts.
     db_model.init()
-    rf_model = load_pickle_artifact(config.RF_MODEL_PATH, "RF model", None)
+    rf_model = load_model_artifact(
+        config.RF_MODEL_PATH,
+        getattr(config, "RF_MODEL_LEGACY_PATH", None),
+    )
     encoders = load_pickle_artifact(config.ENCODERS_PATH, "encoders", {})
     feature_cols = load_pickle_artifact(
         config.FEATURE_COLS_PATH,
